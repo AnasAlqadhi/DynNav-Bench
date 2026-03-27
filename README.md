@@ -112,7 +112,7 @@ sudo apt install ros-humble-turtlebot3-gazebo ros-humble-turtlebot3-description
 ```bash
 mkdir -p ~/dynnav_ws/src
 cd ~/dynnav_ws/src
-git clone https://github.com/YOUR_USERNAME/DynNav-Bench.git
+git clone https://github.com/AnasAlqadhi/DynNav-Bench.git
 
 cd ~/dynnav_ws
 source /opt/ros/humble/setup.bash
@@ -235,9 +235,9 @@ If you use DynNav-Bench in your research, please cite:
 ```bibtex
 @software{dynnav_bench,
   title   = {DynNav-Bench: A Dynamic-Obstacle Navigation Benchmark for Deep Reinforcement Learning},
-  author  = {Anas},
+  author  = {Anas Alqadhi},
   year    = {2026},
-  url     = {https://github.com/YOUR_USERNAME/DynNav-Bench},
+  url     = {https://github.com/AnasAlqadhi/DynNav-Bench},
   license = {MIT}
 }
 ```

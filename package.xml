@@ -4,7 +4,7 @@
   <name>dynnav_bench</name>
   <version>1.0.0</version>
   <description>DynNav-Bench: A dynamic-obstacle navigation benchmark for deep reinforcement learning</description>
-  <maintainer email="anas@todo.todo">anas</maintainer>
+  <maintainer email="anas.m.alqadhi1111@gmail.com">Anas Alqadhi</maintainer>
   <license>MIT</license>
 
   <exec_depend>rclpy</exec_depend>
