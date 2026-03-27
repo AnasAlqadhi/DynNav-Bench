@@ -1,0 +1,54 @@
+# =============================================================================
+#  DynNav-Bench — Configuration
+#  Dynamic-Obstacle Navigation Benchmark for Deep Reinforcement Learning
+# =============================================================================
+
+# ── Phase Selection ───────────────────────────────────────────────────────────
+# Choose the difficulty phase (1-5). Override with env var: DYNNAV_PHASE=3
+#
+#   Phase 1 — EASY    goals 1.0–2.0 m,  6 perimeter obstacles only
+#   Phase 2 — NEAR    goals 2.5–3.5 m,  6 perimeter obstacles only
+#   Phase 3 — ALL     goals 1.0–5.0 m,  6 perimeter obstacles only
+#   Phase 4 — HARD    goals 2.5–5.0 m,  12 obstacles (perimeter + 6 centre)
+#   Phase 5 — HARD    goals 2.5–5.0 m,  15 obstacles (all active)
+#
+phase: 1
+
+# ── Observation / Action ──────────────────────────────────────────────────────
+obs_dim:  54          # 24 scan + 24 scan_velocity + 4 nav + 2 summary
+act_dim:   2          # (linear_vel, angular_vel)
+
+# ── Robot Velocity Limits ─────────────────────────────────────────────────────
+lin_min: 0.0          # robot can stop (critical for obstacle avoidance)
+lin_max: 0.26         # TurtleBot3 max linear velocity (m/s)
+ang_max: 1.82         # TurtleBot3 max angular velocity (rad/s)
+
+# ── Danger Zone Mode ──────────────────────────────────────────────────────────
+# Controls observation preprocessing ONLY (reward is identical across modes).
+# Override with env var: DZ_MODE=velocity_dz
+#
+#   baseline    — raw observations, weak proximity penalty
+#   static_dz   — amplify close LiDAR readings (distance-based)
+#   velocity_dz — static_dz + amplify approaching obstacles (recommended)
+#   stam        — raw observations (for learned attention networks)
+#
+dz_mode: velocity_dz
+
+# ── Environment Constants ─────────────────────────────────────────────────────
+goal_radius:    0.45  # metres — success threshold
+collision_dist: 0.20  # metres — collision threshold
+max_steps:       800  # steps before timeout
+stuck_window:    150  # consecutive steps to detect stuck condition
+stuck_thresh:   0.05  # metres — movement threshold for stuck detection
+
+# ── Reward Structure ──────────────────────────────────────────────────────────
+reward_goal:      200.0
+reward_collision: -100.0
+reward_stuck:      -60.0
+reward_timeout:    -80.0
+step_penalty:      -0.15
+progress_scale:     6.0   # multiplier for goal-distance improvement
+heading_bonus:      0.25  # max heading alignment reward
+
+# ── Obstacle Motion ──────────────────────────────────────────────────────────
+obstacle_v_peak: 0.18     # m/s — 70% of robot max, robot can always outrun
