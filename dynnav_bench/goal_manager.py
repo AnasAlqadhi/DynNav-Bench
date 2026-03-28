@@ -113,30 +113,66 @@ PHASE_NAMES = {
 
 
 def _make_goal_sdf(phase: int = 3) -> str:
+    """Goal marker: vertical pole + glowing beacon sphere + ground disc + outer ring."""
     c = PHASE_COLORS.get(phase, PHASE_COLORS[3])
     return f"""<?xml version="1.0" ?>
 <sdf version="1.6">
   <model name="goal_pole">
     <static>true</static>
     <link name="link">
-      <visual name="disc">
-        <pose>0 0 0.015 0 0 0</pose>
-        <geometry><cylinder><radius>0.40</radius><length>0.03</length></cylinder></geometry>
+      <!-- Ground disc — solid coloured circle on the floor -->
+      <visual name="ground_disc">
+        <pose>0 0 0.005 0 0 0</pose>
+        <geometry><cylinder><radius>0.42</radius><length>0.01</length></cylinder></geometry>
+        <material>
+          <ambient>{c['ambient']}</ambient>
+          <diffuse>{c['diffuse']}</diffuse>
+          <emissive>{c['emissive']}</emissive>
+          <specular>0.2 0.2 0.2 1</specular>
+        </material>
+      </visual>
+      <!-- Outer ring — white border around the disc -->
+      <visual name="outer_ring">
+        <pose>0 0 0.006 0 0 0</pose>
+        <geometry><cylinder><radius>0.45</radius><length>0.005</length></cylinder></geometry>
+        <material>
+          <ambient>0.9 0.9 0.9 1</ambient>
+          <diffuse>1 1 1 0.8</diffuse>
+          <emissive>0.4 0.4 0.4 1</emissive>
+        </material>
+      </visual>
+      <!-- Vertical pole — thin metallic rod rising from the disc -->
+      <visual name="pole">
+        <pose>0 0 0.35 0 0 0</pose>
+        <geometry><cylinder><radius>0.02</radius><length>0.70</length></cylinder></geometry>
+        <material>
+          <ambient>0.6 0.6 0.6 1</ambient>
+          <diffuse>0.8 0.8 0.8 1</diffuse>
+          <specular>0.9 0.9 0.9 1</specular>
+        </material>
+      </visual>
+      <!-- Beacon sphere — glowing ball on top of the pole -->
+      <visual name="beacon">
+        <pose>0 0 0.75 0 0 0</pose>
+        <geometry><sphere><radius>0.08</radius></sphere></geometry>
+        <material>
+          <ambient>{c['ambient']}</ambient>
+          <diffuse>{c['diffuse']}</diffuse>
+          <emissive>{c['emissive']}</emissive>
+          <specular>0.5 0.5 0.5 1</specular>
+        </material>
+      </visual>
+      <!-- Inner glow — slightly larger transparent sphere for bloom effect -->
+      <visual name="glow">
+        <pose>0 0 0.75 0 0 0</pose>
+        <geometry><sphere><radius>0.12</radius></sphere></geometry>
         <material>
           <ambient>{c['ambient']}</ambient>
           <diffuse>{c['diffuse']}</diffuse>
           <emissive>{c['emissive']}</emissive>
           <specular>0 0 0 1</specular>
         </material>
-      </visual>
-      <visual name="ring">
-        <pose>0 0 0.016 0 0 0</pose>
-        <geometry><cylinder><radius>0.40</radius><length>0.001</length></cylinder></geometry>
-        <material>
-          <ambient>1 1 1 1</ambient>
-          <diffuse>1 1 1 0.6</diffuse>
-          <emissive>{c['emissive']}</emissive>
-        </material>
+        <transparency>0.6</transparency>
       </visual>
     </link>
   </model>

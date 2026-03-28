@@ -5,39 +5,26 @@
 DynNav-Bench is a Gazebo-based simulation benchmark for training and evaluating DRL agents on mapless robot navigation through environments with moving obstacles. It features a 10×10 m arena with up to 15 dynamic obstacles, a 5-phase difficulty curriculum, and a velocity-aware 54-dimensional observation space.
 
 <p align="center">
-  <img src="docs/arena_overview.png" alt="DynNav Arena" width="600">
+  <a href="https://youtu.be/REPLACE_WITH_VIDEO_ID">
+    <img src="docs/arena_overview.png" alt="DynNav-Bench Arena — Click to watch demo" width="700">
+  </a>
+  <br>
+  <em>Click the image to watch the demo video</em>
 </p>
 
 ---
 
 ## Key Features
 
-- **15 dynamic obstacles** with sinusoidal motion (8–20 s periods, 0.18 m/s peak)
-- **5 difficulty phases** — from easy close-range goals to full-arena navigation with all obstacles active
-- **54-dim velocity-aware observation** — LiDAR ranges + temporal scan velocity + goal vector
-- **4 Danger Zone (DZ) preprocessing modes** for ablation studies (baseline, static_dz, velocity_dz, stam)
-- **Deterministic obstacle motion** — reproducible evaluation across seeds
-- **Bring your own agent** — environment exposes standard ROS2 topics; plug in any RL algorithm
-- **TurtleBot3 Waffle Pi** — standard platform, easy to transfer to real hardware
+- **15 dynamic obstacles** with sinusoidal motion (8–20 s periods, 0.18 m/s peak velocity)
+- **5 difficulty phases** — progressive difficulty from close-range goals to full-arena navigation with all obstacles active
+- **54-dim velocity-aware observation** — LiDAR ranges + temporal scan velocity + goal vector + robot velocity
+- **4 Danger Zone (DZ) preprocessing modes** for ablation studies
+- **Deterministic obstacle motion** — fully reproducible evaluation across seeds
+- **Bring your own agent** — standard ROS2 topic interface; plug in any RL algorithm
+- **TurtleBot3 Waffle Pi** — standard research platform, sim-to-real transferable
 
-## Arena Layout
-
-```
- ┌────────────────────────────────────┐
- │  dyn1(NW)              dyn2(NE)   │  10 × 10 m enclosed arena
- │     ●←→                  ●←→      │
- │                                    │
- │          s8    s10                 │  Phase 4-5: centre obstacles
- │          ●←→   ●←→                │  activate progressively
- │  dyn5 ●   s1  s2   ● dyn6        │
- │       ↕    ●↕  ●↕     ↕          │
- │        s6 ●↕        ●↕ s7        │
- │                                    │
- │  dyn3(SW)              dyn4(SE)   │
- │     ●↕                   ●↕      │
- └────────────────────────────────────┘
-  ● = dynamic obstacle    ←→ / ↕ = motion axis
-```
+---
 
 ## Difficulty Phases
 
@@ -49,12 +36,16 @@ DynNav-Bench is a Gazebo-based simulation benchmark for training and evaluating 
 | 4 | 36 | 2.5–5.0 m | 12 (+6 centre) | Hard — centre corridor obstacles activate |
 | 5 | 36 | 2.5–5.0 m | 15 (all) | Final — all obstacles active, maximum difficulty |
 
+Select the phase with `DYNNAV_PHASE=1..5` environment variable.
+
+---
+
 ## Observation Space (54 dims)
 
 | Component | Dims | Range | Description |
 |-----------|------|-------|-------------|
 | `scan` | 24 | [0, 1] | Normalised LiDAR (min-pooled from 360 rays) |
-| `scan_velocity` | 24 | [-1, 1] | Frame-to-frame scan difference (detects motion) |
+| `scan_velocity` | 24 | [-1, 1] | Frame-to-frame scan difference (detects moving obstacles) |
 | `goal_dist` | 1 | [0, 1] | Normalised distance to goal (d/8.0) |
 | `goal_angle` | 1 | [-1, 1] | Normalised heading error (angle/π) |
 | `own_lin_vel` | 1 | — | Actual linear velocity (v/0.26) |
@@ -68,20 +59,6 @@ DynNav-Bench is a Gazebo-based simulation benchmark for training and evaluating 
 |--------|-------|-------------|
 | `linear_vel` | [0.0, 0.26] m/s | Forward velocity |
 | `angular_vel` | [-1.82, 1.82] rad/s | Turning velocity |
-
-## Reward Structure
-
-| Component | Value | Condition |
-|-----------|-------|-----------|
-| Step penalty | -0.15 | Every step |
-| Progress | δ × 6.0 | Distance improvement toward goal |
-| Heading bonus | 0.25 × alignment × forward_vel | Moving toward goal |
-| Anti-spin | -0.3 × \|ω\| | Spinning in place (lin_vel < 0.05) |
-| Proximity | -0.2 to -0.5 | Near obstacles (mode-dependent radius) |
-| **Goal reached** | **+200** | Within 0.45 m of goal |
-| **Collision** | **-100** | Within 0.20 m of obstacle |
-| **Stuck** | **-60** | No movement for 150 steps |
-| **Timeout** | **-80** | Exceeds 800 steps |
 
 ---
 
@@ -150,11 +127,8 @@ DYNNAV_PHASE=5 ros2 launch dynnav_bench dynnav_bench_launch.py
 
 ```bash
 source ~/dynnav_ws/install/setup.bash
-
-# Set the phase (must match Terminal 1)
 export DYNNAV_PHASE=1
 
-# Start all three nodes
 ros2 run dynnav_bench environment &
 ros2 run dynnav_bench goal_manager &
 ros2 run dynnav_bench obstacle_controller &
@@ -185,8 +159,8 @@ Your agent communicates via these ROS2 topics:
 Control observation preprocessing with the `DZ_MODE` env var:
 
 ```bash
-DZ_MODE=baseline    ros2 run dynnav_bench environment   # raw observations
-DZ_MODE=static_dz   ros2 run dynnav_bench environment   # amplify close readings
+DZ_MODE=baseline     ros2 run dynnav_bench environment   # raw observations
+DZ_MODE=static_dz    ros2 run dynnav_bench environment   # amplify close readings
 DZ_MODE=velocity_dz  ros2 run dynnav_bench environment   # amplify close + approaching (default)
 DZ_MODE=stam         ros2 run dynnav_bench environment   # raw (for learned attention)
 ```
